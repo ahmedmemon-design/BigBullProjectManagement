@@ -3,6 +3,7 @@ import { WorkspaceContext } from "./context/WorkspaceContext";
 import CreateWorkspace from "./components/CreateWorkspace";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "./context/AuthContext";
 import { 
   FiSearch,
   FiGrid,
@@ -15,6 +16,7 @@ import { supabase } from "./lib/supabase";
 
 export default function Workspaces() {
   const { workspaces, loading, removeWorkspace } = useContext(WorkspaceContext);
+  const { profile } = useContext(AuthContext); // Get user profile
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [memberCounts, setMemberCounts] = useState({});
@@ -23,6 +25,9 @@ export default function Workspaces() {
   const [workspaceToDelete, setWorkspaceToDelete] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showMenuId, setShowMenuId] = useState(null);
+
+  // Check if user is admin
+  const isAdmin = profile?.role === "admin";
 
   // Filter workspaces based on search
   const filteredWorkspaces = workspaces.filter(ws =>
@@ -178,45 +183,43 @@ export default function Workspaces() {
               </div>
             </div>
             
-            {/* Actions Menu */}
-            <div className="relative workspace-menu">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowMenuId(isMenuOpen ? null : ws.id);
-                }}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                aria-label="Workspace options"
-              >
-                <FiMoreVertical className="w-5 h-5 text-gray-500" />
-              </button>
-              
-              {/* Dropdown Menu - Only 2 options */}
-              <AnimatePresence>
-                {isMenuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 py-1" // Changed to z-50
-                  >
-                    
-                    {/* Divider */}
-                    <div className="border-t border-gray-200 my-1"></div>
-                    
-                    {/* Option 2: Delete Workspace */}
-                    <button
-                      onClick={(e) => openDeleteModal(ws, e)}
-                      className="w-full z-50 flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-red-600 transition-colors"
+            {/* Actions Menu - Only show if user is admin */}
+            {isAdmin && (
+              <div className="relative workspace-menu">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowMenuId(isMenuOpen ? null : ws.id);
+                  }}
+                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  aria-label="Workspace options"
+                >
+                  <FiMoreVertical className="w-5 h-5 text-gray-500" />
+                </button>
+                
+                {/* Dropdown Menu - Only 1 option (Delete) */}
+                <AnimatePresence>
+                  {isMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 py-1"
                     >
-                      <FiTrash2 className="w-4 h-4" />
-                      <span className="font-medium">Delete Workspace</span>
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                      {/* Option: Delete Workspace - Only for admin */}
+                      <button
+                        onClick={(e) => openDeleteModal(ws, e)}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-red-600 transition-colors"
+                      >
+                        <FiTrash2 className="w-4 h-4" />
+                        <span className="font-medium">Delete Workspace</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
           </div>
           
           {/* Card Content */}
@@ -358,14 +361,14 @@ export default function Workspaces() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" // Changed to z-[9999]
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
             onClick={() => !deleteLoading && setShowDeleteModal(false)}
           >
             <motion.div
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden z-[10000]" // Added higher z-index
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden z-[10000]"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
