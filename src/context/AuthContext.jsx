@@ -57,7 +57,7 @@ const signUp = async (email, password, name) => {
     email,
     password,
     options: {
-      emailRedirectTo: "http://localhost:5173",
+      emailRedirectTo: "https://big-bull-digital.netlify.app/",
     },
   });
 
@@ -107,3 +107,4 @@ const signUp = async (email, password, name) => {
     </AuthContext.Provider>
   );
 }
+
