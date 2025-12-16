@@ -103,6 +103,11 @@ export default function Workspaces() {
     }
   };
 
+  const formatDate = (dateString) => {
+  const date = dateString
+  return isNaN(date) ? "Recently" : date.toLocaleDateString();
+};
+  
   // Open delete confirmation modal
   const openDeleteModal = (workspace, e) => {
     e.stopPropagation();
@@ -178,7 +183,7 @@ export default function Workspaces() {
                   {ws.name}
                 </h3>
                 <p className="text-sm text-gray-500 mt-1">
-                  Workspace • Created {new Date(ws.created_at).toLocaleDateString()}
+  Workspace • Created {formatDate(ws.created_at)}
                 </p>
               </div>
             </div>
@@ -449,3 +454,4 @@ export default function Workspaces() {
     </div>
   );
 }
+
